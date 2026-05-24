@@ -117,7 +117,7 @@ destroy_fleet() {
   for (( i=0; i<N; i++ )); do
     name="${RUNNER_NAMES[$i]}"
     token="${RUNNER_TOKENS[$i]}"
-    container_name="llama.cpp-gha-dgx-${name}"
+    container_name="gha-dgx-${name}"
 
     echo ""
     echo "--- Runner $((i+1))/$N: $name ---"
@@ -154,7 +154,7 @@ start_fleet() {
 
   for (( i=0; i<N; i++ )); do
     name="${RUNNER_NAMES[$i]}"
-    container_name="llama.cpp-gha-dgx-${name}"
+    container_name="gha-dgx-${name}"
 
     echo ""
     echo "--- Runner $((i+1))/$N: $name ---"
@@ -185,7 +185,7 @@ stop_fleet() {
 
   for (( i=0; i<N; i++ )); do
     name="${RUNNER_NAMES[$i]}"
-    container_name="llama.cpp-gha-dgx-${name}"
+    container_name="gha-dgx-${name}"
 
     echo ""
     echo "--- Runner $((i+1))/$N: $name ---"

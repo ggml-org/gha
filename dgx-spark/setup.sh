@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ###############################################################################
-# setup.sh — GitHub Actions runner container for llama.cpp on Jetson Orin
+# setup.sh — GitHub Actions runner container for ggml-org on DGX systems
 #
 # Usage:
 #   ./setup.sh <GHA_URL> <GHA_TOKEN> <RUNNER_GROUP> <INSTANCE_NAME> [--cpu-range=RANGE] [--memory=SIZE] [--labels=LABELS]
@@ -24,7 +24,7 @@ set -euo pipefail
 # Prerequisites on host:
 #   - Docker installed and running
 #   - User in 'docker' group (no sudo needed)
-#   - NVIDIA driver + CUDA toolkit installed (JetPack)
+#   - NVIDIA driver + CUDA toolkit installed
 ###############################################################################
 
 # ---------------------------------------------------------------------------
@@ -43,8 +43,8 @@ GHA_RUNNER_GROUP="$3"
 INSTANCE_NAME="$4"
 shift 4
 
-CONTAINER_NAME="llama.cpp-gha-dgx-${INSTANCE_NAME}"
-IMAGE="ggml-org/llama.cpp-gha-dgx"
+CONTAINER_NAME="gha-dgx-${INSTANCE_NAME}"
+IMAGE="ggml-org/gha-dgx"
 CUDA_HOST_DIR="/usr/local/cuda-13.0"
 NVIDIA_LIB_DIR="/usr/lib/aarch64-linux-gnu"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -181,8 +181,8 @@ echo "  Enter container:  docker exec -it $CONTAINER_NAME bash"
 echo "  View logs:        docker logs -f $CONTAINER_NAME"
 echo "  Stop:             docker stop $CONTAINER_NAME"
 echo "  Remove:           docker rm -f $CONTAINER_NAME"
-echo "  Save image:       docker save ${IMAGE}:latest -o llama.cpp-gha-dgx.tar"
-echo "  Restore image:    docker load -i llama.cpp-gha-dgx.tar"
+echo "  Save image:       docker save ${IMAGE}:latest -o gha-dgx.tar"
+echo "  Restore image:    docker load -i gha-dgx.tar"
 echo ""
 RECREATE_ARGS=""
 [[ -n "$RUNNER_CPU_RANGE" ]] && RECREATE_ARGS+=" --cpu-range=$RUNNER_CPU_RANGE"

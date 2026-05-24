@@ -3,10 +3,16 @@ FROM ubuntu:24.04
 # Avoid interactive prompts during package installation
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Install build tools and dependencies
+# Install prerequisites and configure the official NodeSource repository (Node 20 LTS)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  ca-certificates \
+  curl \
+  gnupg \
+  && curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+
+# Install Node.js along with build tools and dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
   bc \
-  ca-certificates \
   ccache \
   glslc \
   libssl-dev \
@@ -20,7 +26,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   git \
   git-lfs \
   wget \
-  curl \
   pkg-config \
   python3 \
   python3-dev \
@@ -30,13 +35,21 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   tcl \
   unzip \
   time \
+  nodejs \
   && rm -rf /var/lib/apt/lists/*
 
-# Register CUDA library path for the linker (Jetson uses non-standard path)
+# Register CUDA library path for the linker (Jetson/SBSA architecture)
 RUN echo "/usr/local/cuda/targets/sbsa-linux/lib" > /etc/ld.so.conf.d/cuda.conf && ldconfig
 
 # Create low-privilege user
 RUN useradd -m -s /bin/bash ggml
+
+# Define a shared, permanent browser cache directory accessible to everyone
+ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+RUN mkdir -p /ms-playwright && chown -R ggml:ggml /ms-playwright
+
+# NOTE: this is synchronized with the version used by llama.cpp's webui!
+RUN ELECTRON_SKIP_BINARY_DOWNLOAD=1 npx playwright@1.56.1 install --with-deps
 
 # Copy and set up the entrypoint script
 COPY start.sh /start.sh
@@ -49,3 +62,4 @@ WORKDIR /home/ggml
 RUN git lfs install
 
 ENTRYPOINT ["/start.sh"]
+

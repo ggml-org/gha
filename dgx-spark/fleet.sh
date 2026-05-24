@@ -35,10 +35,10 @@ mapfile -t RUNNER_TOKENS < "$SCRIPT_DIR/tokens.txt"
 # TODO: does the DGX Spark support coopmat2?
 RUNNER_LABELS=(
   "fast"
-  "CPU,NVIDIA,COOPMAT,llama-server,fast"
-  "CPU,NVIDIA,COOPMAT,llama-server,fast"
-  "CPU,NVIDIA,COOPMAT,llama-server,fast"
-  "CPU,NVIDIA,COOPMAT,llama-server,fast"
+  "CPU,PLAYWRIGHT,NVIDIA,COOPMAT,llama-server,fast"
+  "CPU,PLAYWRIGHT,NVIDIA,COOPMAT,llama-server,fast"
+  "CPU,PLAYWRIGHT,NVIDIA,COOPMAT,llama-server,fast"
+  "CPU,PLAYWRIGHT,NVIDIA,COOPMAT,llama-server,fast"
 )
 
 # CPU ranges per runner (cpuset pins to specific host cores)

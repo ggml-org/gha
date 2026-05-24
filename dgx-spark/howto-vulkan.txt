@@ -1,0 +1,87 @@
+Vulkan GPU Access in Docker on DGX Spark (NVIDIA GB10)
+=====================================================
+
+The DGX Spark uses an NVIDIA GB10 GPU (Grace superchip) with the open NVIDIA
+driver (580.126.09). Getting Vulkan to work inside a Docker container requires
+more than just mounting /dev/dri — the NVIDIA Vulkan ICD (libGLX_nvidia.so.0)
+needs access to the NVIDIA kernel character devices as well.
+
+Why this is different from desktop CUDA GPUs
+---------------------------------------------
+On desktop NVIDIA systems, the Vulkan ICD is libnvidia-vulkan.so.1, which
+communicates through /dev/dri/renderD* alone. On the GB10, the ICD is
+libGLX_nvidia.so.0, which is primarily an OpenGL library that also exports
+Vulkan entry points. This library needs /dev/nvidia0 and related device
+nodes to talk to the kernel module.
+
+Additionally, the driver libraries must match the host kernel module version
+exactly (580.126.09). Installing libnvidia-gl-580 from Ubuntu repos pulls a
+different version (580.159.03) that will fail with ERROR_INCOMPATIBLE_DRIVER.
+
+
+What is needed
+--------------
+The container must have:
+
+  1. The Vulkan loader library (libvulkan1) — can be any recent version
+  2. The NVIDIA driver libraries — mounted from the host to ensure version match
+  3. DRI device nodes — /dev/dri/renderD128 and /dev/dri/card0
+  4. NVIDIA character devices — /dev/nvidia0, /dev/nvidiactl, /dev/nvidia-modeset,
+     /dev/nvidia-uvm, /dev/nvidia-uvm-tools
+  5. Vulkan ICD and Layer manifest files — nvidia_icd.json and nvidia_layers.json
+  6. GLVND EGL vendor config — /usr/share/glvnd/
+
+
+Running with setup.sh
+---------------------
+The setup.sh script handles all of this automatically. The key docker run flags:
+
+    docker run -d \
+      --device /dev/dri/renderD128 \
+      --device /dev/dri/card0 \
+      --device /dev/nvidia0 \
+      --device /dev/nvidiactl \
+      --device /dev/nvidia-modeset \
+      --device /dev/nvidia-uvm \
+      --device /dev/nvidia-uvm-tools \
+      -v /usr/lib/aarch64-linux-gnu/:/usr/lib/aarch64-linux-gnu/:ro \
+      -v /usr/share/vulkan/icd.d/nvidia_icd.json:/usr/share/vulkan/icd.d/nvidia_icd.json:ro \
+      -v /usr/share/vulkan/implicit_layer.d/nvidia_layers.json:/usr/share/vulkan/implicit_layer.d/nvidia_layers.json:ro \
+      -v /usr/share/glvnd:/usr/share/glvnd:ro \
+      ...
+
+The Dockerfile already installs libvulkan-dev and vulkan-tools, so the
+Vulkan loader is available inside the container.
+
+
+Verifying Vulkan works inside the container
+--------------------------------------------
+    docker exec <container> vulkaninfo --summary
+
+Expected output:
+
+    GPU0:
+        apiVersion         = 1.4.312
+        driverVersion      = 580.126.9.0
+        vendorID           = 0x10de
+        deviceID           = 0x2e12
+        deviceType         = PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU
+        deviceName         = NVIDIA GB10
+        driverName         = NVIDIA
+        driverInfo         = 580.126.09
+
+
+Troubleshooting
+---------------
+"Could not get 'vkCreateInstance' via 'vk_icdGetInstanceProcAddr'"
+  - Missing NVIDIA device nodes (/dev/nvidia*). The ICD needs them.
+  - Version mismatch between libnvidia-gl and the kernel module. Always mount
+    from host rather than installing from apt inside the container.
+
+"Found no drivers!"
+  - Missing or incorrect Vulkan ICD manifest (nvidia_icd.json).
+  - libGLX_nvidia.so.0 not found or not in library path.
+
+"Certificate verification failed" when building
+  - The NVIDIA Vulkan PPA has a self-signed cert. It's not needed anyway since
+    the Dockerfile skips installing NVIDIA packages and relies on host mounts.

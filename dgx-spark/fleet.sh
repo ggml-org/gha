@@ -21,11 +21,11 @@ GHA_RUNNER_GROUP="ggml-ci"
 
 # Runner instance names
 RUNNER_NAMES=(
-  "ggml-dgx-spark-2a-runner-1"
-  "ggml-dgx-spark-2a-runner-2"
-  "ggml-dgx-spark-2a-runner-3"
-  "ggml-dgx-spark-2a-runner-4"
-  "ggml-dgx-spark-2a-runner-5"
+  "ggml-dgx-spark-2-runner-1"
+  "ggml-dgx-spark-2-runner-2"
+  "ggml-dgx-spark-2-runner-3"
+  "ggml-dgx-spark-2-runner-4"
+  "ggml-dgx-spark-2-runner-5"
 )
 
 # GHA registration tokens (read from tokens.txt, one per line)

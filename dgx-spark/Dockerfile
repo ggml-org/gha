@@ -35,6 +35,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
   tcl \
   unzip \
   time \
+  vim \
   nodejs \
   && rm -rf /var/lib/apt/lists/*
 
